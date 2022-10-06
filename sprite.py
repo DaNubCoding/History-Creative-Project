@@ -7,7 +7,8 @@ if TYPE_CHECKING:
 from enum import Enum, auto
 
 class LayersEnum(Enum):
-    CHUNKS = auto()
+    TILES = auto()
+    PLAYER = auto()
 
 class Sprite:
     """A common baseclass for all sprites."""

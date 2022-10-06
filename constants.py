@@ -4,3 +4,4 @@ from pygame.locals import *
 VEC = Vector2
 FPS = 60
 WIDTH, HEIGHT = SCR_DIM = 1000, 600
+TILE_SIZE = 64
