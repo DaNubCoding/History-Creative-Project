@@ -6,7 +6,7 @@ from exe import pathof
 from os import listdir
 import pygame
 
-pygame.display.set_mode((0, 0))
+pygame.display.set_mode((1, 1))
 
 TILE_DIR = "assets/textures/tiles"
 TILE_IMGS = {image[:-4]: scale(load(pathof(join(TILE_DIR, image))), (TILE_SIZE, TILE_SIZE)).convert() for image in listdir(TILE_DIR)}

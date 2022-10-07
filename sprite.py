@@ -43,7 +43,6 @@ class Sprite:
 
     def update(self) -> None:
         """Update the classes attributes and variables or handle class logic related to the class.
-
         Args:
             dt (float): Delta time
             **kwargs (dict[Any]): Class specific arguments
@@ -107,7 +106,7 @@ class SpriteManager:
         # is first, and the highest is drawn last
         self.layers = dict(sorted(self.layers.items()))
         self.layeriter = self.spriteiter = 0
-        self.get_layer = lambda: list(self.layers.values())[self.layeriter-1]
+        self.get_layer = lambda: list(self.layers.values())[self.layeriter]
         return self
 
     # Bad code but i just cba at this point this has taken way too long
@@ -127,12 +126,14 @@ class SpriteManager:
             # If the next layer is a debug layer, keep on incrementing the layer counter until it is no longer a debug layer
             # This could benefit from a do / while loop :o (python please add it its actually useful)
             while True:
-                self.layeriter += 1
                 if self.layeriter >= len(self.layers): # Fixes a crash that occurs if a debug layer is the last entry in LayersEnum
                     raise StopIteration
-                if not LayersEnum(list(self.layers)[self.layeriter - 1]).name.endswith("_DEBUG"):
+                if not LayersEnum(list(self.layers)[self.layeriter]).name.endswith("_DEBUG"):
                     layer = self.get_layer() # Recalculating layer with the new layer iteration attribute
+                    self.layeriter += 1 # We need to do += 1 here because the later += wont be reached if we break
                     break
+
+                self.layeriter += 1
 
         return layer[self.spriteiter]
 
@@ -148,10 +149,8 @@ class SpriteManager:
 
     def add(self, *args: tuple[Sprite]) -> None:
         """Add any number of sprites to the list of sprites
-
         Args:
             *args (tuple of Sprites): The sprites to add (can be of arbitary length)
-
         Raises:
             NoLayerAttributeException: If any given sprite does not have a layer attribute
         """
@@ -192,6 +191,7 @@ class SpriteManager:
         # We need to copy self.layers because otheriwse when sprites are created whilst rendering it would crash
         layers = self.layers.copy()
         for layer in layers: # Loop through every layer
+            # if LayersEnum(layer).name.endswith("_DEBUG"): continue
             for sprite in layers[layer]: # Loop through every sprite
                 if not LayersEnum(layer).name.endswith("_DEBUG"): # Draw every layer that isnt a debug layer
                     sprite.draw()

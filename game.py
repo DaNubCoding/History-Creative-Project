@@ -20,5 +20,6 @@ class Game(Scene):
 
     def draw(self) -> None:
         # Main game drawing goes here
+        self.manager.screen.fill((0, 0, 0))
         super().draw()
         # or here if drawn on top of all sprites
