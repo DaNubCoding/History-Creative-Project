@@ -16,6 +16,12 @@ class TileManager:
         self.scene = self.manager.scene
         self.tiles = {}
 
+    def generate(self, pos: tuple[int, int]):
+        pos = VEC(pos)
+        if pos.x == 10:
+            return "trench1"
+        return "ground" + str(randint(1, 2))
+
     def update(self):
         if LayersEnum.TILES.value not in self.scene.sprite_manager.layers:
             self.scene.sprite_manager.layers[LayersEnum.TILES.value] = []
@@ -26,16 +32,19 @@ class TileManager:
         tiles_end = VEC((camera.offset.x + WIDTH) // TILE_SIZE + 1, (camera.offset.y + HEIGHT) // TILE_SIZE + 1)
         for x in range(int(tiles_start.x), int(tiles_end.x)):
             for y in range(int(tiles_start.y), int(tiles_end.y)):
-                if (pos := (x * TILE_SIZE, y * TILE_SIZE)) not in self.tiles:
-                    self.tiles[pos] = Tile(self.manager, pos, "ground" + str(randint(1, 2)))
+                if (pos := (x, y)) not in self.tiles:
+                    self.tiles[pos] = Tile(self.manager, pos, self.generate(pos))
                 self.scene.sprite_manager.add(self.tiles[pos])
 
 class Tile(Sprite):
     def __init__(self, manager: GameManager, pos: tuple[int, int], name: str) -> None:
         super().__init__(manager, LayersEnum.TILES)
-        self.pos = VEC(pos)
+        self.pos = VEC(pos) * TILE_SIZE
         self.name = name
-        self.image = pygame.transform.rotate(TILE_IMGS[self.name], choice([0, 90, 180, 270]))
+        match self.name[:-1]:
+            case "ground": self.rotation = choice([0, 90, 180, 270])
+            case "trench": self.rotation = choice([0, 180])
+        self.image = pygame.transform.rotate(TILE_IMGS[self.name], self.rotation)
 
     def update(self):
         pass

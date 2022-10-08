@@ -18,6 +18,8 @@ class Bullet(Sprite):
 
     def update(self):
         self.pos += self.vel * self.manager.dt
+        if self.pos.distance_to(self.scene.player.pos) > 800:
+            self.kill()
 
     def draw(self):
         self.manager.screen.blit(self.image, self.pos - VEC(self.image.get_size()) // 2 - self.scene.player.camera.offset)
