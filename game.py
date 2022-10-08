@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from game_manager import GameManager
 
+from player import Player, PlayerHealthHUD
 from tile import TileManager
-from player import Player
 from scene import Scene
 
 class Game(Scene):
@@ -14,6 +14,7 @@ class Game(Scene):
         super().setup()
         self.player = Player(self.manager)
         self.tile_manager = TileManager(self.manager)
+        self.player_health_hud = PlayerHealthHUD(self.manager)
 
     def update(self) -> None:
         # Main game update logic goes here

@@ -10,6 +10,7 @@ class LayersEnum(Enum):
     TILES = auto()
     BULLETS = auto()
     PLAYER = auto()
+    HUD = auto()
 
 class Sprite:
     """A common baseclass for all sprites."""
