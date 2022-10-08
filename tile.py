@@ -4,16 +4,33 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from game_manager import GameManager
 
+from constants import TILE_SIZE, VEC, WIDTH, HEIGHT
 from sprite import Sprite, LayersEnum
-from constants import TILE_SIZE, VEC
+from random import randint, choice
 from images import TILE_IMGS
+import pygame
+
+class TileManager:
+    def __init__(self, manager: GameManager) -> None:
+        self.manager = manager
+        self.tiles = {}
+
+    def draw(self):
+        camera = self.manager.scene.player.camera
+        tiles_start = VEC((camera.offset.x) // TILE_SIZE, (camera.offset.y) // TILE_SIZE)
+        tiles_end = VEC((camera.offset.x + WIDTH) // TILE_SIZE + 1, (camera.offset.y + HEIGHT) // TILE_SIZE + 1)
+        for x in range(int(tiles_start.x), int(tiles_end.x)):
+            for y in range(int(tiles_start.y), int(tiles_end.y)):
+                if (pos := (x * TILE_SIZE, y * TILE_SIZE)) not in self.tiles:
+                    self.tiles[pos] = Tile(self.manager, pos, "ground" + str(randint(1, 2)))
+                self.tiles[pos].draw()
 
 class Tile(Sprite):
     def __init__(self, manager: GameManager, pos: tuple[int, int], name: str) -> None:
         super().__init__(manager, LayersEnum.TILES)
         self.pos = VEC(pos)
         self.name = name
-        self.image = TILE_IMGS[self.name]
+        self.image = pygame.transform.rotate(TILE_IMGS[self.name], choice([0, 90, 180, 270]))
 
     def update(self):
         pass
