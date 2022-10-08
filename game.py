@@ -17,12 +17,12 @@ class Game(Scene):
 
     def update(self) -> None:
         # Main game update logic goes here
+        self.tile_manager.update()
         super().update()
         # or here if the logic should run after all sprites update
 
     def draw(self) -> None:
         # Main game drawing goes here
         self.manager.screen.fill((0, 0, 0))
-        self.tile_manager.draw()
         super().draw()
         # or here if drawn on top of all sprites

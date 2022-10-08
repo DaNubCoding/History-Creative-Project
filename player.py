@@ -9,13 +9,14 @@ from sprite import Sprite, LayersEnum
 from math import atan2, degrees
 from images import SOLDIER_IMG
 from pygame.locals import *
+from bullet import Bullet
 from utils import intvec
-from clamps import snap
 import pygame
 
-class Camera(pygame.sprite.Sprite):
-    def __init__(self, master):
+class Camera:
+    def __init__(self, master: Player):
         self.master = master
+        self.manager = self.master.manager
         self.actual_offset = self.master.size / 2
         self.actual_offset = self.master.pos - self.actual_offset - VEC(SCR_DIM) / 2
         self.offset = intvec(self.actual_offset)
@@ -26,7 +27,7 @@ class Camera(pygame.sprite.Sprite):
             tick_offset.x = 0
         if -1 < tick_offset.y < 1:
             tick_offset.y = 0
-        self.actual_offset += tick_offset / 10
+        self.actual_offset += tick_offset * 5 * self.manager.dt
         self.offset = intvec(self.actual_offset)
 
 class Player(Sprite):
@@ -40,7 +41,8 @@ class Player(Sprite):
         self.rot = 0
         self.image = SOLDIER_IMG
         
-        self.CONST_ACC = 40000
+        self.CONST_ACC = 1000
+        self.MAX_VEL = 240
 
     def update(self):
         keys = pygame.key.get_pressed()
@@ -52,13 +54,13 @@ class Player(Sprite):
         if keys[K_s]: self.acc.y += 1
         if keys[K_a]: self.acc.x -= 1
         if keys[K_d]: self.acc.x += 1
-        self.acc = (self.acc.normalize() if self.acc else VEC()) * self.CONST_ACC
-        self.acc -= self.vel * 0.005 * self.CONST_ACC # Drag/friction: limits speed to about 200
-        self.acc *= self.manager.dt
+        self.acc = self.acc.normalize() * self.CONST_ACC if self.acc else VEC()
+        self.acc -= self.vel * 5
 
         # Update velocity
         self.vel += intvec(self.acc) * self.manager.dt
-        print(self.vel.length())
+        # self.vel -= self.vel * 5 * self.manager.dt
+        self.vel = self.vel.normalize() * self.MAX_VEL if self.vel.length() > self.MAX_VEL else self.vel
 
         # Update position
         self.pos += self.vel * self.manager.dt
@@ -67,6 +69,9 @@ class Player(Sprite):
         self.rot = degrees(atan2(m_pos.x - self.pos.x + self.camera.offset.x, m_pos.y - self.pos.y + self.camera.offset.y)) - 90
 
         self.camera.update()
+
+        if KEYDOWN in self.manager.events and self.manager.events[KEYDOWN].key == K_SPACE:
+            Bullet(self.manager, self.pos + VEC(34, 10).rotate(-self.rot)) # Offset to the gun
 
     def draw(self):
         self.image = pygame.transform.rotate(SOLDIER_IMG, self.rot)
