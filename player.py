@@ -44,6 +44,7 @@ class Player(Sprite):
         self.image = SOLDIER_IMG
         self.bullet_timer = time.time()
         self.on_tile = None
+        self.max_speed = 220
         self.health = {
             "head": 100,
             "body": 100,
@@ -51,9 +52,9 @@ class Player(Sprite):
             "legs": 100,
             "feet": 100
         }
-        
+
+        self.MAX_SPEED = 220
         self.CONST_ACC = 1000
-        self.MAX_VEL = 240
 
     def update(self):
         keys = pygame.key.get_pressed()
@@ -70,9 +71,11 @@ class Player(Sprite):
 
         # Update velocity
         self.vel += intvec(self.acc) * self.manager.dt
-        self.vel = self.vel.normalize() * self.MAX_VEL if self.vel.length() > self.MAX_VEL else self.vel
+        self.vel = self.vel.normalize() * self.max_speed if self.vel.length() > self.max_speed else self.vel
         if self.on_tile and self.on_tile.name[:-1] == "trench":
             self.vel -= self.vel * 0.05
+            self.health["feet"] -= 0.0025
+            self.max_speed = (self.MAX_SPEED - 30) * self.health["feet"] / 100 + 30
 
         # Update position
         self.pos += self.vel * self.manager.dt
@@ -111,11 +114,11 @@ class PlayerHealthHUD(Sprite):
 
     def update(self):
         self.colors = {
-            "head": (round((100 - self.health["head"]) / 50 * 255) if self.health["head"] > 50 else 255, round(self.health["head"] / 50 * 256) if self.health["head"] <= 50 else 255, 0),
-            "body": (round((100 - self.health["body"]) / 50 * 255) if self.health["body"] > 50 else 255, round(self.health["body"] / 50 * 256) if self.health["body"] <= 50 else 255, 0),
-            "arms": (round((100 - self.health["arms"]) / 50 * 255) if self.health["arms"] > 50 else 255, round(self.health["arms"] / 50 * 256) if self.health["arms"] <= 50 else 255, 0),
-            "legs": (round((100 - self.health["legs"]) / 50 * 255) if self.health["legs"] > 50 else 255, round(self.health["legs"] / 50 * 256) if self.health["legs"] <= 50 else 255, 0),
-            "feet": (round((100 - self.health["feet"]) / 50 * 255) if self.health["feet"] > 50 else 255, round(self.health["feet"] / 50 * 256) if self.health["feet"] <= 50 else 255, 0),
+            "head": (round((100 - self.health["head"]) / 50 * 255) if self.health["head"] > 50 else 255, round(self.health["head"] / 50 * 255) if self.health["head"] <= 50 else 255, 0),
+            "body": (round((100 - self.health["body"]) / 50 * 255) if self.health["body"] > 50 else 255, round(self.health["body"] / 50 * 255) if self.health["body"] <= 50 else 255, 0),
+            "arms": (round((100 - self.health["arms"]) / 50 * 255) if self.health["arms"] > 50 else 255, round(self.health["arms"] / 50 * 255) if self.health["arms"] <= 50 else 255, 0),
+            "legs": (round((100 - self.health["legs"]) / 50 * 255) if self.health["legs"] > 50 else 255, round(self.health["legs"] / 50 * 255) if self.health["legs"] <= 50 else 255, 0),
+            "feet": (round((100 - self.health["feet"]) / 50 * 255) if self.health["feet"] > 50 else 255, round(self.health["feet"] / 50 * 255) if self.health["feet"] <= 50 else 255, 0),
         }
         try:
             [pygame.Color(color) for color in self.colors.values()]
@@ -142,10 +145,16 @@ class PlayerHealthHUD(Sprite):
         pygame.draw.rect(self.image, self.colors["arms"], (40, 30, 10, 50))
         pygame.draw.rect(self.image, (80, 80, 80), (40, 30, 10, 50), 2)
 
-        pygame.draw.rect(self.image, self.colors["legs"], (10, 80, 15, 50))
+        pygame.draw.rect(self.image, self.colors["legs"], (10, 80, 15, 40))
         pygame.draw.rect(self.image, (80, 80, 80), (10, 80, 15, 50), 2)
 
-        pygame.draw.rect(self.image, self.colors["legs"], (25, 80, 15, 50))
+        pygame.draw.rect(self.image, self.colors["legs"], (25, 80, 15, 40))
         pygame.draw.rect(self.image, (80, 80, 80), (25, 80, 15, 50), 2)
+
+        pygame.draw.rect(self.image, self.colors["feet"], (10, 120, 15, 10))
+        pygame.draw.rect(self.image, (80, 80, 80), (10, 120, 15, 10), 2)
+
+        pygame.draw.rect(self.image, self.colors["feet"], (25, 120, 15, 10))
+        pygame.draw.rect(self.image, (80, 80, 80), (25, 120, 15, 10), 2)
 
         self.manager.screen.blit(self.image, (20, 20))
