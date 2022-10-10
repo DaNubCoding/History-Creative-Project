@@ -13,8 +13,8 @@ class Bullet(Sprite):
     def __init__(self, manager: GameManager, pos: tuple[int, int]) -> None:
         super().__init__(manager, LayersEnum.BULLETS)
         self.pos = VEC(pos)
-        self.vel = VEC(800, 0).rotate(-self.scene.player.rot)
-        self.image = pygame.transform.rotate(BULLET_IMG, self.scene.player.rot - 90)
+        self.vel = VEC(800, 0).rotate(-self.scene.player.rot - 90)
+        self.image = pygame.transform.rotate(BULLET_IMG, self.scene.player.rot)
 
     def update(self):
         self.pos += self.vel * self.manager.dt

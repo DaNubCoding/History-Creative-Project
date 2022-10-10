@@ -4,13 +4,14 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from game_manager import GameManager
 
-from constants import TILE_SIZE, WIDTH, HEIGHT, VEC, SCR_DIM
+from constants import SCR_DIM, TILE_SIZE, VEC
+from utils import intvec, inttup, sign
 from sprite import LayersEnum, Sprite
-from utils import intvec, inttup
 from math import atan2, degrees
-from images import SOLDIER_IMG
+from images import SOLDIER1_IMG
 from pygame.locals import *
 from bullet import Bullet
+from clamps import snap
 import pygame
 import time
 
@@ -34,14 +35,15 @@ class Camera:
 class Player(Sprite):
     def __init__(self, manager: GameManager) -> None:
         super().__init__(manager, LayersEnum.PLAYER)
-        self.size = VEC(SOLDIER_IMG.get_size())
+        self.size = VEC(SOLDIER1_IMG.get_size())
         self.pos = VEC(TILE_SIZE // 2, 0)
         self.coords = self.pos // TILE_SIZE
         self.camera = Camera(self)
         self.vel = VEC(0, 0)
         self.acc = VEC(0, 0)
         self.rot = 0
-        self.image = SOLDIER_IMG
+        self.rot_target = 0
+        self.image = SOLDIER1_IMG
         self.bullet_timer = time.time()
         self.on_tile = None
         self.max_speed = 220
@@ -55,6 +57,7 @@ class Player(Sprite):
 
         self.NORMAL_MAX_SPEED = 220
         self.CONST_ACC = 1000
+        self.ROT_ACC = 5
 
     def update(self):
         keys = pygame.key.get_pressed()
@@ -82,8 +85,15 @@ class Player(Sprite):
         self.coords = self.pos // TILE_SIZE
 
         # Update rotation
-        self.rot = degrees(atan2(m_pos.x - self.pos.x + self.camera.offset.x, m_pos.y - self.pos.y + self.camera.offset.y)) - 90
+        self.rot_target = degrees(atan2(m_pos.x - self.pos.x + self.camera.offset.x, m_pos.y - self.pos.y + self.camera.offset.y)) + 180
+        if abs((rot_diff := self.rot_target - self.rot)) < 180:
+            self.rot += (self.rot_target - self.rot) * self.ROT_ACC * self.manager.dt
+        else:
+            self.rot -= sign(rot_diff) * (360 - abs(rot_diff)) * self.ROT_ACC * self.manager.dt
+        self.rot %= 360
+        self.rot = snap(self.rot, self.rot_target, 1)
 
+        # Update camera
         self.camera.update()
 
         # Find the tile the player is on
@@ -92,12 +102,12 @@ class Player(Sprite):
 
         # Spawn bullets
         if keys[K_SPACE] and time.time() - self.bullet_timer > 2:
-            Bullet(self.manager, self.pos + VEC(34, 10).rotate(-self.rot)) # Offset to the gun on player's image
+            Bullet(self.manager, self.pos + VEC(10, -34).rotate(-self.rot)) # Offset to the gun on player's image
             self.bullet_timer = time.time()
 
     def draw(self):
-        self.image = pygame.transform.rotate(SOLDIER_IMG, self.rot)
-        self.manager.screen.blit(self.image, self.pos - VEC(self.image.get_size()) // 2 + VEC(10, 0).rotate(-self.rot) - self.camera.offset)
+        self.image = pygame.transform.rotate(SOLDIER1_IMG, self.rot)
+        self.manager.screen.blit(self.image, self.pos - VEC(self.image.get_size()) // 2 + VEC(0, -10).rotate(-self.rot) - self.camera.offset)
 
 class PlayerHealthHUD(Sprite):
     def __init__(self, manager: GameManager) -> None:
