@@ -7,6 +7,7 @@ if TYPE_CHECKING:
 from player import Player, PlayerHealthHUD
 from tile import TileManager
 from scene import Scene
+from enemy import Enemy
 
 class Game(Scene):
     def setup(self) -> None:
@@ -15,6 +16,7 @@ class Game(Scene):
         self.player = Player(self.manager)
         self.tile_manager = TileManager(self.manager)
         self.player_health_hud = PlayerHealthHUD(self.manager)
+        Enemy(self.manager, (0, 0))
 
     def update(self) -> None:
         # Main game update logic goes here

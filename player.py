@@ -5,8 +5,8 @@ if TYPE_CHECKING:
     from game_manager import GameManager
 
 from constants import TILE_SIZE, WIDTH, HEIGHT, VEC, SCR_DIM
-from utils import intvec, inttup, hsv_to_rgb
-from sprite import Sprite, LayersEnum
+from sprite import LayersEnum, Sprite
+from utils import intvec, inttup
 from math import atan2, degrees
 from images import SOLDIER_IMG
 from pygame.locals import *
@@ -35,7 +35,7 @@ class Player(Sprite):
     def __init__(self, manager: GameManager) -> None:
         super().__init__(manager, LayersEnum.PLAYER)
         self.size = VEC(SOLDIER_IMG.get_size())
-        self.pos = VEC(WIDTH // 2, HEIGHT // 2)
+        self.pos = VEC(TILE_SIZE // 2, 0)
         self.coords = self.pos // TILE_SIZE
         self.camera = Camera(self)
         self.vel = VEC(0, 0)
@@ -53,7 +53,7 @@ class Player(Sprite):
             "feet": 100
         }
 
-        self.MAX_SPEED = 220
+        self.NORMAL_MAX_SPEED = 220
         self.CONST_ACC = 1000
 
     def update(self):
@@ -75,10 +75,10 @@ class Player(Sprite):
         if self.on_tile and self.on_tile.name[:-1] == "trench":
             self.vel -= self.vel * 0.05
             self.health["feet"] -= 0.0025
-            self.max_speed = (self.MAX_SPEED - 30) * self.health["feet"] / 100 + 30
+            self.max_speed = (self.NORMAL_MAX_SPEED - 30) * self.health["feet"] / 100 + 30
 
         # Update position
-        self.pos += self.vel * self.manager.dt
+        self.pos += intvec(self.vel) * self.manager.dt
         self.coords = self.pos // TILE_SIZE
 
         # Update rotation
@@ -104,13 +104,7 @@ class PlayerHealthHUD(Sprite):
         super().__init__(manager, LayersEnum.HUD)
         self.health = self.scene.player.health
         self.image = pygame.Surface((50, 130), SRCALPHA)
-        self.colors = {
-            "head": (0, 255, 0),
-            "body": (0, 255, 0),
-            "arms": (0, 255, 0),
-            "legs": (0, 255, 0),
-            "feet": (0, 255, 0)
-        }
+        self.colors = {}
 
     def update(self):
         self.colors = {

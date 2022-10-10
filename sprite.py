@@ -9,6 +9,7 @@ from enum import Enum, auto
 class LayersEnum(Enum):
     TILES = auto()
     BULLETS = auto()
+    ENEMIES = auto()
     PLAYER = auto()
     HUD = auto()
 

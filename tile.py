@@ -16,14 +16,13 @@ class TileManager:
         self.scene = self.manager.scene
         self.tiles = {}
         self.trench_positions = {}
-        if LayersEnum.TILES.value not in self.scene.sprite_manager.layers:
-            self.scene.sprite_manager.layers[LayersEnum.TILES.value] = []
+        self.scene.sprite_manager.layers[LayersEnum.TILES.value] = []
 
     def generate(self, pos: tuple[int, int]):
         pos = VEC(pos)
         if pos.x not in self.trench_positions:
             self.trench_positions[pos.x] = not randint(0, 15)
-        if self.trench_positions[pos.x]:
+        if pos.x not in {-5, -4, -3, -2, -1, 1, 2, 3, 4, 5} and (self.trench_positions[pos.x] or pos.x == 0):
             return "trench1"
         return "ground" + str(randint(1, 2))
 
