@@ -11,6 +11,7 @@ from random import choices, randint
 from math import atan2, degrees
 from images import SOLDIER1_IMG
 from bullet import PlayerBullet
+from particles import Blood
 from pygame.locals import *
 from numpy import average
 from clamps import snap
@@ -129,6 +130,8 @@ class Player(Sprite):
 
     def get_shot(self):
         self.health[choices(["head", "body", "arms", "legs"], weights=[3, 10, 6, 8])[0]] -= randint(40, 80)
+        for _ in range(randint(20, 35)):
+            Blood(self.manager, self.pos)
 
 class PlayerHealthHUD(Sprite):
     def __init__(self, manager: GameManager) -> None:

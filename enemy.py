@@ -11,6 +11,7 @@ from constants import VEC, TILE_SIZE
 from utils import intvec, inttup
 from math import degrees, atan2
 from bullet import EnemyBullet
+from particles import Blood
 from numpy import average
 from clamps import snap
 from utils import sign
@@ -128,6 +129,8 @@ class Enemy(Sprite):
 
     def get_shot(self):
         self.health[choices(["head", "body", "arms", "legs"], weights=[3, 10, 6, 8])[0]] -= randint(40, 80)
+        for _ in range(randint(20, 35)):
+            Blood(self.manager, self.pos)
 
 class Skull(Sprite):
     def __init__(self, manager: GameManager, pos: tuple[int, int]) -> None:
