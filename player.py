@@ -7,10 +7,11 @@ if TYPE_CHECKING:
 from constants import SCR_DIM, TILE_SIZE, VEC
 from utils import intvec, inttup, sign
 from sprite import LayersEnum, Sprite
+from random import choices, randint
 from math import atan2, degrees
 from images import SOLDIER1_IMG
+from bullet import PlayerBullet
 from pygame.locals import *
-from bullet import Bullet
 from numpy import average
 from clamps import snap
 import pygame
@@ -55,7 +56,9 @@ class Player(Sprite):
             "legs": 100,
             "feet": 100
         }
+        self.health_average = 100
         self.deviation = 10
+        self.bullets = 20
 
         self.NORMAL_MAX_SPEED = 220
         self.CONST_ACC = 1000
@@ -107,20 +110,25 @@ class Player(Sprite):
 
         # Spawn bullets
         if keys[K_SPACE] and time.time() - self.bullet_timer > 2:
-            Bullet(self.manager, self, self.pos + VEC(10, -34).rotate(-self.rot)) # Offset to the gun on player's image
+            PlayerBullet(self.manager, self, self.pos + VEC(10, -34).rotate(-self.rot)) # Offset to the gun on player's image
             self.bullet_timer = time.time()
 
         # Update health
-        for health in self.health:
-            if self.health[health] < 0:
-                self.health[health] = 0
+        for part in self.health:
+            if self.health[part] < 0:
+                self.health[part] = 0
+                if part in {"head", "body"}:
+                    self.kill()
         self.health_average = average(list(self.health.values()), weights=[16, 12, 2, 2, 2])
-        if self.health_average < 50:
-            print("DEAD")
+        if self.health_average < 60:
+            self.kill()
 
     def draw(self):
         self.image = pygame.transform.rotate(SOLDIER1_IMG, self.rot)
         self.manager.screen.blit(self.image, self.pos - VEC(self.image.get_size()) // 2 + VEC(0, -10).rotate(-self.rot) - self.camera.offset)
+
+    def get_shot(self):
+        self.health[choices(["head", "body", "arms", "legs"], weights=[3, 10, 6, 8])[0]] -= randint(40, 80)
 
 class PlayerHealthHUD(Sprite):
     def __init__(self, manager: GameManager) -> None:

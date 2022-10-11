@@ -18,6 +18,7 @@ class Game(Scene):
         self.player = Player(self.manager)
         self.tile_manager = TileManager(self.manager)
         self.player_health_hud = PlayerHealthHUD(self.manager)
+        self.enemies: list[Enemy] = []
         for _ in range(1):
             Enemy(self.manager, (randint(-5, 5) * TILE_SIZE, randint(-3, 3) * TILE_SIZE))
 

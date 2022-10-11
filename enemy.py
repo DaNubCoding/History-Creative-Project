@@ -4,13 +4,14 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from game_manager import GameManager
 
+from random import uniform, choice, choices, randint
+from images import SOLDIER2_IMG, SKULL_IMG
 from sprite import Sprite, LayersEnum
 from constants import VEC, TILE_SIZE
-from random import uniform, choice
 from utils import intvec, inttup
-from images import SOLDIER2_IMG
 from math import degrees, atan2
-from bullet import Bullet
+from bullet import EnemyBullet
+from numpy import average
 from clamps import snap
 from utils import sign
 import pygame
@@ -19,6 +20,7 @@ import time
 class Enemy(Sprite):
     def __init__(self, manager: GameManager, pos: tuple[int, int]) -> None:
         super().__init__(manager, LayersEnum.ENEMIES)
+        self.manager.scene.enemies.append(self)
         self.pos = VEC(pos)
         self.vel = VEC(0, 0)
         self.acc = VEC(0, 0)
@@ -41,6 +43,7 @@ class Enemy(Sprite):
             "legs": 100,
             "feet": 100
         }
+        self.health_average = 100
         self.deviation = 10
 
         self.NORMAL_MAX_SPEED = 140
@@ -62,10 +65,10 @@ class Enemy(Sprite):
         if time.time() - self.fire_timer > self.fire_interval:
             self.move_duration = 0
             self.rot_target = degrees(atan2(self.scene.player.pos.x - self.pos.x, self.scene.player.pos.y - self.pos.y)) + 180
-            if self.rot == self.rot_target:
+            if abs(self.rot - self.rot_target) < 3:
                 self.fire_timer = time.time()
                 self.fire_interval = uniform(2, 6)
-                Bullet(self.manager, self, self.pos + VEC(10, -34).rotate(-self.rot))
+                EnemyBullet(self.manager, self, self.pos + VEC(10, -34).rotate(-self.rot))
 
         # Update acceleration
         self.acc = VEC(0, 0)
@@ -101,10 +104,35 @@ class Enemy(Sprite):
             self.on_tile = self.scene.tile_manager.tiles[inttup(self.coords)]
 
         # Clamp health
-        for health in self.health:
-            if self.health[health] < 0:
-                self.health[health] = 0
+        for part in self.health:
+            if self.health[part] < 0:
+                self.health[part] = 0
+                if part in {"head", "body"}:
+                    self.kill()
+        self.health_average = average(list(self.health.values()), weights=[16, 12, 2, 2, 2])
+        if self.health_average < 60:
+            self.kill()
 
     def draw(self):
         self.image = pygame.transform.rotate(SOLDIER2_IMG, self.rot)
         self.manager.screen.blit(self.image, self.pos - VEC(self.image.get_size()) // 2 + VEC(0, -10).rotate(-self.rot) - self.scene.player.camera.offset)
+        # pygame.draw.circle(self.manager.screen, (0, 255, 0), self.pos - self.scene.player.camera.offset, 20, 3)
+
+    def kill(self) -> None:
+        Skull(self.manager, self.pos)
+        try:
+            self.scene.enemies.remove(self)
+        except ValueError:
+            pass
+        super().kill()
+
+    def get_shot(self):
+        self.health[choices(["head", "body", "arms", "legs"], weights=[3, 10, 6, 8])[0]] -= randint(40, 80)
+
+class Skull(Sprite):
+    def __init__(self, manager: GameManager, pos: tuple[int, int]) -> None:
+        super().__init__(manager, LayersEnum.ENEMIES)
+        self.pos = VEC(pos)
+
+    def draw(self):
+        self.manager.screen.blit(SKULL_IMG, self.pos - VEC(SKULL_IMG.get_size()) // 2 - self.scene.player.camera.offset)

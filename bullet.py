@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from game_manager import GameManager
+    from player import Player
 
 from sprite import Sprite, LayersEnum
 from images import BULLET_IMG
@@ -26,3 +27,18 @@ class Bullet(Sprite):
 
     def draw(self):
         self.manager.screen.blit(self.image, self.pos - VEC(self.image.get_size()) // 2 - self.scene.player.camera.offset)
+
+class PlayerBullet(Bullet):
+    def update(self):
+        super().update()
+        for enemy in self.scene.enemies:
+            if self.pos.distance_to(enemy.pos) < 20:
+                enemy.get_shot()
+                self.kill()
+
+class EnemyBullet(Bullet):
+    def update(self):
+        super().update()
+        if self.pos.distance_to(self.scene.player.pos) < 20:
+            self.scene.player.get_shot()
+            self.kill()
