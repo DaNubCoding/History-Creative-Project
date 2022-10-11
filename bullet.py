@@ -6,15 +6,18 @@ if TYPE_CHECKING:
 
 from sprite import Sprite, LayersEnum
 from images import BULLET_IMG
+from random import randint
 from constants import VEC
 import pygame
 
 class Bullet(Sprite):
-    def __init__(self, manager: GameManager, pos: tuple[int, int]) -> None:
+    def __init__(self, manager: GameManager, master: Sprite, pos: tuple[int, int]) -> None:
         super().__init__(manager, LayersEnum.BULLETS)
+        self.master = master
         self.pos = VEC(pos)
-        self.vel = VEC(800, 0).rotate(-self.scene.player.rot - 90)
-        self.image = pygame.transform.rotate(BULLET_IMG, self.scene.player.rot)
+        self.deviation = randint(-master.deviation, master.deviation)
+        self.vel = VEC(800, 0).rotate(-self.master.rot - 90 + self.deviation)
+        self.image = pygame.transform.rotate(BULLET_IMG, self.master.rot + self.deviation)
 
     def update(self):
         self.pos += self.vel * self.manager.dt

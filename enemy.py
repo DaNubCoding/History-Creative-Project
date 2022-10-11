@@ -9,6 +9,8 @@ from constants import VEC, TILE_SIZE
 from random import uniform, choice
 from utils import intvec, inttup
 from images import SOLDIER2_IMG
+from math import degrees, atan2
+from bullet import Bullet
 from clamps import snap
 from utils import sign
 import pygame
@@ -22,13 +24,16 @@ class Enemy(Sprite):
         self.acc = VEC(0, 0)
         self.coords = self.pos // TILE_SIZE
         self.rot = 0
+        self.rot_target = 0
         self.max_speed = 140
         self.on_tile = None
         self.moving = False
         self.move_timer = time.time()
-        self.move_interval = 1
-        self.move_duration = 2
+        self.move_interval = uniform(0.5, 3)
+        self.move_duration = uniform(1, 4)
         self.move_direction = choice([VEC(-1, 0), VEC(1, 0), VEC(0, -1), VEC(0, 1), VEC(-1, -1), VEC(-1, 1), VEC(1, -1), VEC(1, 1)])
+        self.fire_timer = time.time()
+        self.fire_interval = uniform(2, 6)
         self.health = {
             "head": 100,
             "body": 100,
@@ -36,6 +41,7 @@ class Enemy(Sprite):
             "legs": 100,
             "feet": 100
         }
+        self.deviation = 10
 
         self.NORMAL_MAX_SPEED = 140
         self.CONST_ACC = 1000
@@ -53,6 +59,14 @@ class Enemy(Sprite):
             self.moving = False
             self.move_direction = VEC(0, 0)
 
+        if time.time() - self.fire_timer > self.fire_interval:
+            self.move_duration = 0
+            self.rot_target = degrees(atan2(self.scene.player.pos.x - self.pos.x, self.scene.player.pos.y - self.pos.y)) + 180
+            if self.rot == self.rot_target:
+                self.fire_timer = time.time()
+                self.fire_interval = uniform(2, 6)
+                Bullet(self.manager, self, self.pos + VEC(10, -34).rotate(-self.rot))
+
         # Update acceleration
         self.acc = VEC(0, 0)
         self.acc = self.move_direction.copy()
@@ -66,23 +80,30 @@ class Enemy(Sprite):
             self.vel -= self.vel * 0.05
             self.health["feet"] -= 0.0025
             self.max_speed = (self.NORMAL_MAX_SPEED - 30) * self.health["feet"] / 100 + 30
+        self.vel = snap(self.vel, VEC(), VEC(1, 1))
 
         # Update position
         self.pos += intvec(self.vel) * self.manager.dt
         self.coords = self.pos // TILE_SIZE
 
         # Update rotation
-        self.rot_target = self.vel.angle_to(VEC(0, -1))
+        self.rot_target = self.vel.angle_to(VEC(0, -1)) if self.vel else self.rot_target
+        self.rot %= 360
+        self.rot_target %= 360
         if abs((rot_diff := self.rot_target - self.rot)) < 180:
             self.rot += (self.rot_target - self.rot) * self.ROT_ACC * self.manager.dt
         else:
             self.rot -= sign(rot_diff) * (360 - abs(rot_diff)) * self.ROT_ACC * self.manager.dt
-        self.rot %= 360
         self.rot = snap(self.rot, self.rot_target, 1)
 
         # Find the tile the player is on
         if inttup(self.coords) in self.scene.tile_manager.tiles:
             self.on_tile = self.scene.tile_manager.tiles[inttup(self.coords)]
+
+        # Clamp health
+        for health in self.health:
+            if self.health[health] < 0:
+                self.health[health] = 0
 
     def draw(self):
         self.image = pygame.transform.rotate(SOLDIER2_IMG, self.rot)

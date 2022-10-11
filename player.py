@@ -11,6 +11,7 @@ from math import atan2, degrees
 from images import SOLDIER1_IMG
 from pygame.locals import *
 from bullet import Bullet
+from numpy import average
 from clamps import snap
 import pygame
 import time
@@ -41,7 +42,7 @@ class Player(Sprite):
         self.camera = Camera(self)
         self.vel = VEC(0, 0)
         self.acc = VEC(0, 0)
-        self.rot = 0
+        self.rot = 10
         self.rot_target = 0
         self.image = SOLDIER1_IMG
         self.bullet_timer = time.time()
@@ -54,6 +55,7 @@ class Player(Sprite):
             "legs": 100,
             "feet": 100
         }
+        self.deviation = 10
 
         self.NORMAL_MAX_SPEED = 220
         self.CONST_ACC = 1000
@@ -77,20 +79,23 @@ class Player(Sprite):
         self.vel = self.vel.normalize() * self.max_speed if self.vel.length() > self.max_speed else self.vel
         if self.on_tile and self.on_tile.name[:-1] == "trench":
             self.vel -= self.vel * 0.05
-            self.health["feet"] -= 0.0025
-            self.max_speed = (self.NORMAL_MAX_SPEED - 30) * self.health["feet"] / 100 + 30
+            self.health["feet"] -= 0.004
+            self.health["legs"] -= 0.002
+            self.max_speed = (self.NORMAL_MAX_SPEED - 30) * (self.health["feet"] + self.health["legs"]) / 200 + 30
+        self.vel = snap(self.vel, VEC(), VEC(1, 1))
 
         # Update position
         self.pos += intvec(self.vel) * self.manager.dt
         self.coords = self.pos // TILE_SIZE
 
         # Update rotation
-        self.rot_target = degrees(atan2(m_pos.x - self.pos.x + self.camera.offset.x, m_pos.y - self.pos.y + self.camera.offset.y)) + 180
-        if abs((rot_diff := self.rot_target - self.rot)) < 180:
+        self.rot_target = degrees(atan2(m_pos.x - self.pos.x + self.camera.offset.x, m_pos.y - self.pos.y + self.camera.offset.y)) - 180
+        self.rot %= 360
+        self.rot_target %= 360
+        if abs(rot_diff := self.rot_target - self.rot) < 180:
             self.rot += (self.rot_target - self.rot) * self.ROT_ACC * self.manager.dt
         else:
             self.rot -= sign(rot_diff) * (360 - abs(rot_diff)) * self.ROT_ACC * self.manager.dt
-        self.rot %= 360
         self.rot = snap(self.rot, self.rot_target, 1)
 
         # Update camera
@@ -102,8 +107,16 @@ class Player(Sprite):
 
         # Spawn bullets
         if keys[K_SPACE] and time.time() - self.bullet_timer > 2:
-            Bullet(self.manager, self.pos + VEC(10, -34).rotate(-self.rot)) # Offset to the gun on player's image
+            Bullet(self.manager, self, self.pos + VEC(10, -34).rotate(-self.rot)) # Offset to the gun on player's image
             self.bullet_timer = time.time()
+
+        # Update health
+        for health in self.health:
+            if self.health[health] < 0:
+                self.health[health] = 0
+        self.health_average = average(list(self.health.values()), weights=[16, 12, 2, 2, 2])
+        if self.health_average < 50:
+            print("DEAD")
 
     def draw(self):
         self.image = pygame.transform.rotate(SOLDIER1_IMG, self.rot)
@@ -124,17 +137,6 @@ class PlayerHealthHUD(Sprite):
             "legs": (round((100 - self.health["legs"]) / 50 * 255) if self.health["legs"] > 50 else 255, round(self.health["legs"] / 50 * 255) if self.health["legs"] <= 50 else 255, 0),
             "feet": (round((100 - self.health["feet"]) / 50 * 255) if self.health["feet"] > 50 else 255, round(self.health["feet"] / 50 * 255) if self.health["feet"] <= 50 else 255, 0),
         }
-        try:
-            [pygame.Color(color) for color in self.colors.values()]
-        except ValueError:
-            print("DEAD")
-            self.colors = {
-                "head": (255, 0, 0),
-                "body": (255, 0, 0),
-                "arms": (255, 0, 0),
-                "legs": (255, 0, 0),
-                "feet": (255, 0, 0)
-            }
 
     def draw(self):
         pygame.draw.circle(self.image, self.colors["head"], (25, 15), 15)
