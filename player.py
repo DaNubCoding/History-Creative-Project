@@ -60,6 +60,7 @@ class Player(Sprite):
         self.health_average = 100
         self.deviation = 10
         self.bullets = 20
+        self.heavily_injured = False
 
         self.NORMAL_MAX_SPEED = 220
         self.CONST_ACC = 1000
@@ -120,6 +121,14 @@ class Player(Sprite):
                 self.health[part] = 0
                 if part in {"head", "body"}:
                     self.kill()
+            elif self.health[part] < 30:
+                self.heavily_injured = True
+
+        # Losing blood
+        if self.heavily_injured:
+            for part in self.health:
+                self.health[part] -= 0.005
+                
         self.health_average = average(list(self.health.values()), weights=[16, 12, 2, 2, 2])
         if self.health_average < 60:
             self.kill()

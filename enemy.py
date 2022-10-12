@@ -136,6 +136,11 @@ class Skull(Sprite):
     def __init__(self, manager: GameManager, pos: tuple[int, int]) -> None:
         super().__init__(manager, LayersEnum.ENEMIES)
         self.pos = VEC(pos)
+        self.timer = time.time()
+
+    def update(self):
+        if time.time() - self.timer > 8:
+            self.kill()
 
     def draw(self):
         self.manager.screen.blit(SKULL_IMG, self.pos - VEC(SKULL_IMG.get_size()) // 2 - self.scene.player.camera.offset)

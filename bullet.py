@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from game_manager import GameManager
-    from player import Player
 
 from sprite import Sprite, LayersEnum
 from images import BULLET_IMG
@@ -22,6 +21,7 @@ class Bullet(Sprite):
 
     def update(self):
         self.pos += self.vel * self.manager.dt
+
         if self.pos.distance_to(self.scene.player.pos) > 800:
             self.kill()
 
@@ -29,16 +29,24 @@ class Bullet(Sprite):
         self.manager.screen.blit(self.image, self.pos - VEC(self.image.get_size()) // 2 - self.scene.player.camera.offset)
 
 class PlayerBullet(Bullet):
+    def __init__(self, manager: GameManager, master: Sprite, pos: tuple[int, int]) -> None:
+        super().__init__(manager, master, pos)
+        self.trench_hit = randint(0, 5) == 0
+
     def update(self):
         super().update()
         for enemy in self.scene.enemies:
-            if self.pos.distance_to(enemy.pos) < 20:
+            if self.pos.distance_to(enemy.pos) < 20 and (enemy.on_tile.name[:-1] != "trench" or self.trench_hit):
                 enemy.get_shot()
                 self.kill()
 
 class EnemyBullet(Bullet):
+    def __init__(self, manager: GameManager, master: Sprite, pos: tuple[int, int]) -> None:
+        super().__init__(manager, master, pos)
+        self.trench_hit = randint(0, 5) == 0
+
     def update(self):
         super().update()
-        if self.pos.distance_to(self.scene.player.pos) < 20:
+        if self.pos.distance_to(self.scene.player.pos) < 20 and (self.scene.player.on_tile.name[:-1] != "trench" or self.trench_hit):
             self.scene.player.get_shot()
             self.kill()
