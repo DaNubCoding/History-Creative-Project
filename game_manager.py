@@ -4,14 +4,13 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from scene import Scene
 
+from pygame.locals import DOUBLEBUF, HWSURFACE, QUIT
+from constants import SCR_DIM, FPS
+from menus import MainMenu
+from game import Game
+from enum import Enum
 import pygame
 import sys
-
-from pygame.locals import DOUBLEBUF, HWSURFACE, QUIT, K_F3, KEYDOWN
-from enum import Enum
-
-from constants import SCR_DIM, FPS
-from game import Game
 
 class GameManager:
     def __init__(self) -> None:
@@ -50,6 +49,7 @@ class GameManager:
 
     class Scenes(Enum):
         GAME = Game
+        MAINMENU = MainMenu
 
     # "self.game.new_scene(self.game.Scenes.GAME)" anywhere in any sprite code to start a new scene
     def new_scene(self, scene_class: Scene, **kwargs) -> None:

@@ -46,6 +46,8 @@ class Enemy(Sprite):
         }
         self.health_average = 100
         self.deviation = 10
+        self.heavily_injured = False
+        self.run_away = False
 
         self.NORMAL_MAX_SPEED = 140
         self.CONST_ACC = 1000
@@ -65,11 +67,16 @@ class Enemy(Sprite):
 
         if time.time() - self.fire_timer > self.fire_interval:
             self.move_duration = 0
-            self.rot_target = degrees(atan2(self.scene.player.pos.x - self.pos.x, self.scene.player.pos.y - self.pos.y)) + 180
+            self.rot_to_player()
             if abs(self.rot - self.rot_target) < 3:
                 self.fire_timer = time.time()
                 self.fire_interval = uniform(2, 6)
                 EnemyBullet(self.manager, self, self.pos + VEC(10, -34).rotate(-self.rot))
+
+        if self.run_away and self.on_tile.name[:-1] != "trench":
+            self.rot_to_player()
+            self.move_direction = VEC(-sign(self.scene.player.pos.x - self.pos.x), 0)
+        # print(self.run_away)
 
         # Update acceleration
         self.acc = VEC(0, 0)
@@ -110,8 +117,18 @@ class Enemy(Sprite):
                 self.health[part] = 0
                 if part in {"head", "body"}:
                     self.kill()
+            elif self.health[part] < 30:
+                self.heavily_injured = True
+
+        # Losing blood
+        if self.heavily_injured:
+            for part in self.health:
+                self.health[part] -= 0.005
+
         self.health_average = average(list(self.health.values()), weights=[16, 12, 2, 2, 2])
-        if self.health_average < 60:
+        if self.health_average < 75 or self.heavily_injured:
+            self.run_away = True
+        if self.health_average < 50:
             self.kill()
 
     def draw(self):
@@ -131,6 +148,9 @@ class Enemy(Sprite):
         self.health[choices(["head", "body", "arms", "legs"], weights=[3, 10, 6, 8])[0]] -= randint(40, 80)
         for _ in range(randint(20, 35)):
             Blood(self.manager, self.pos)
+
+    def rot_to_player(self):
+        self.rot_target = degrees(atan2(self.scene.player.pos.x - self.pos.x, self.scene.player.pos.y - self.pos.y)) + 180
 
 class Skull(Sprite):
     def __init__(self, manager: GameManager, pos: tuple[int, int]) -> None:

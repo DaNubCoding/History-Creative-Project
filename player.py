@@ -128,10 +128,13 @@ class Player(Sprite):
         if self.heavily_injured:
             for part in self.health:
                 self.health[part] -= 0.005
-                
+
         self.health_average = average(list(self.health.values()), weights=[16, 12, 2, 2, 2])
         if self.health_average < 60:
-            self.kill()
+            try:
+                self.kill()
+            except:
+                pass
 
     def draw(self):
         self.image = pygame.transform.rotate(SOLDIER1_IMG, self.rot)
@@ -147,16 +150,26 @@ class PlayerHealthHUD(Sprite):
         super().__init__(manager, LayersEnum.HUD)
         self.health = self.scene.player.health
         self.image = pygame.Surface((50, 130), SRCALPHA)
-        self.colors = {}
+        self.colors = {
+            "head": (0, 255, 0),
+            "body": (0, 255, 0),
+            "arms": (0, 255, 0),
+            "legs": (0, 255, 0),
+            "feet": (0, 255, 0)
+        }
 
     def update(self):
         self.colors = {
-            "head": (round((100 - self.health["head"]) / 50 * 255) if self.health["head"] > 50 else 255, round(self.health["head"] / 50 * 255) if self.health["head"] <= 50 else 255, 0),
-            "body": (round((100 - self.health["body"]) / 50 * 255) if self.health["body"] > 50 else 255, round(self.health["body"] / 50 * 255) if self.health["body"] <= 50 else 255, 0),
-            "arms": (round((100 - self.health["arms"]) / 50 * 255) if self.health["arms"] > 50 else 255, round(self.health["arms"] / 50 * 255) if self.health["arms"] <= 50 else 255, 0),
-            "legs": (round((100 - self.health["legs"]) / 50 * 255) if self.health["legs"] > 50 else 255, round(self.health["legs"] / 50 * 255) if self.health["legs"] <= 50 else 255, 0),
-            "feet": (round((100 - self.health["feet"]) / 50 * 255) if self.health["feet"] > 50 else 255, round(self.health["feet"] / 50 * 255) if self.health["feet"] <= 50 else 255, 0),
+            "head": [round((100 - self.health["head"]) / 50 * 255) if self.health["head"] > 50 else 255, round(self.health["head"] / 50 * 255) if self.health["head"] <= 50 else 255, 0],
+            "body": [round((100 - self.health["body"]) / 50 * 255) if self.health["body"] > 50 else 255, round(self.health["body"] / 50 * 255) if self.health["body"] <= 50 else 255, 0],
+            "arms": [round((100 - self.health["arms"]) / 50 * 255) if self.health["arms"] > 50 else 255, round(self.health["arms"] / 50 * 255) if self.health["arms"] <= 50 else 255, 0],
+            "legs": [round((100 - self.health["legs"]) / 50 * 255) if self.health["legs"] > 50 else 255, round(self.health["legs"] / 50 * 255) if self.health["legs"] <= 50 else 255, 0],
+            "feet": [round((100 - self.health["feet"]) / 50 * 255) if self.health["feet"] > 50 else 255, round(self.health["feet"] / 50 * 255) if self.health["feet"] <= 50 else 255, 0],
         }
+        for color in self.colors:
+            for i, component in enumerate(self.colors[color]):
+                if component < 0:
+                    self.colors[color][i] = 0
 
     def draw(self):
         pygame.draw.circle(self.image, self.colors["head"], (25, 15), 15)

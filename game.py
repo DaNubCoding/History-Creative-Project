@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     from game_manager import GameManager
 
 from player import Player, PlayerHealthHUD
-from constants import TILE_SIZE
+from constants import TILE_SIZE, VEC
 from tile import TileManager
 from random import randint
 from scene import Scene
@@ -19,12 +19,12 @@ class Game(Scene):
         self.tile_manager = TileManager(self.manager)
         self.player_health_hud = PlayerHealthHUD(self.manager)
         self.enemies: list[Enemy] = []
-        for _ in range(1):
-            Enemy(self.manager, (randint(-5, 5) * TILE_SIZE, randint(-3, 3) * TILE_SIZE))
 
     def update(self) -> None:
         # Main game update logic goes here
         self.tile_manager.update()
+        if len(self.enemies) < 5:
+            Enemy(self.manager, VEC(randint(-5, 5) * TILE_SIZE, randint(-3, 3) * TILE_SIZE) + self.player.coords)
         super().update()
         # or here if the logic should run after all sprites update
 

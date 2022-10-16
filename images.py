@@ -15,5 +15,6 @@ SOLDIER1_IMG = pygame.image.load("assets/textures/soldier1_gun.png").convert_alp
 SOLDIER2_IMG = pygame.image.load("assets/textures/soldier2_gun.png").convert_alpha()
 BULLET_IMG = pygame.image.load("assets/textures/bullet.png").convert_alpha()
 SKULL_IMG = pygame.image.load("assets/textures/skull.png").convert_alpha()
+PARCHMENT_IMG = pygame.image.load("assets/textures/parchment.png").convert_alpha()
 
 pygame.display.quit()
