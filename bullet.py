@@ -16,8 +16,9 @@ class Bullet(Sprite):
         self.master = master
         self.pos = VEC(pos)
         self.deviation = randint(-master.deviation, master.deviation)
-        self.vel = VEC(800, 0).rotate(-self.master.rot - 90 + self.deviation)
-        self.image = pygame.transform.rotate(BULLET_IMG, self.master.rot + self.deviation)
+        # 15 accounts for the slight angle of the gun
+        self.vel = VEC(800, 0).rotate(-self.master.rot - 90 - 15 + self.deviation)
+        self.image = pygame.transform.rotate(BULLET_IMG, self.vel.angle_to(VEC(0, -1)))
 
     def update(self):
         self.pos += self.vel * self.manager.dt
@@ -44,6 +45,7 @@ class EnemyBullet(Bullet):
     def __init__(self, manager: GameManager, master: Sprite, pos: tuple[int, int]) -> None:
         super().__init__(manager, master, pos)
         self.trench_hit = randint(0, 5) == 0
+        self.vel = VEC(800, 0).rotate(-self.master.rot - 90 + self.deviation)
 
     def update(self):
         super().update()

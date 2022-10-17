@@ -14,6 +14,7 @@ from bullet import EnemyBullet
 from particles import Blood
 from numpy import average
 from clamps import snap
+from items import Item
 from utils import sign
 import pygame
 import time
@@ -138,6 +139,8 @@ class Enemy(Sprite):
 
     def kill(self) -> None:
         Skull(self.manager, self.pos)
+        offset = VEC(choice([randint(-40, -20), randint(20, 40)]), choice([randint(-40, -20), randint(20, 40)]))
+        Item(self.manager, self.pos + offset, "lee_enfield_rifle")
         try:
             self.scene.enemies.remove(self)
         except ValueError:

@@ -4,12 +4,12 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from game_manager import GameManager
 
+from images import SOLDIER1_IMG1, SOLDIER1_IMG2
 from constants import SCR_DIM, TILE_SIZE, VEC
 from utils import intvec, inttup, sign
 from sprite import LayersEnum, Sprite
 from random import choices, randint
 from math import atan2, degrees
-from images import SOLDIER1_IMG
 from bullet import PlayerBullet
 from particles import Blood
 from pygame.locals import *
@@ -38,7 +38,7 @@ class Camera:
 class Player(Sprite):
     def __init__(self, manager: GameManager) -> None:
         super().__init__(manager, LayersEnum.PLAYER)
-        self.size = VEC(SOLDIER1_IMG.get_size())
+        self.size = VEC(SOLDIER1_IMG1.get_size())
         self.pos = VEC(TILE_SIZE // 2, 0)
         self.coords = self.pos // TILE_SIZE
         self.camera = Camera(self)
@@ -46,8 +46,9 @@ class Player(Sprite):
         self.acc = VEC(0, 0)
         self.rot = 10
         self.rot_target = 0
-        self.image = SOLDIER1_IMG
+        self.image = SOLDIER1_IMG1
         self.bullet_timer = time.time()
+        self.bullet_interval = 1.5
         self.on_tile = None
         self.max_speed = 220
         self.health = {
@@ -61,6 +62,8 @@ class Player(Sprite):
         self.deviation = 10
         self.bullets = 20
         self.heavily_injured = False
+        self.weapon_damage = 50
+        self.weapon = "ross"
 
         self.NORMAL_MAX_SPEED = 220
         self.CONST_ACC = 1000
@@ -82,11 +85,14 @@ class Player(Sprite):
         # Update velocity
         self.vel += intvec(self.acc) * self.manager.dt
         self.vel = self.vel.normalize() * self.max_speed if self.vel.length() > self.max_speed else self.vel
+        # If in trench
         if self.on_tile and self.on_tile.name[:-1] == "trench":
             self.vel -= self.vel * 0.05
-            self.health["feet"] -= 0.004
-            self.health["legs"] -= 0.002
+            self.health["feet"] -= 2 * self.manager.dt
+            self.health["legs"] -= 1 * self.manager.dt
             self.max_speed = (self.NORMAL_MAX_SPEED - 30) * (self.health["feet"] + self.health["legs"]) / 200 + 30
+            if self.weapon == "ross": # "jam" the gun
+                self.bullet_interval += 0.02 * self.manager.dt
         self.vel = snap(self.vel, VEC(), VEC(1, 1))
 
         # Update position
@@ -111,7 +117,7 @@ class Player(Sprite):
             self.on_tile = self.scene.tile_manager.tiles[inttup(self.coords)]
 
         # Spawn bullets
-        if keys[K_SPACE] and time.time() - self.bullet_timer > 2:
+        if keys[K_SPACE] and time.time() - self.bullet_timer > self.bullet_interval:
             PlayerBullet(self.manager, self, self.pos + VEC(10, -34).rotate(-self.rot)) # Offset to the gun on player's image
             self.bullet_timer = time.time()
 
@@ -137,11 +143,11 @@ class Player(Sprite):
                 pass
 
     def draw(self):
-        self.image = pygame.transform.rotate(SOLDIER1_IMG, self.rot)
+        self.image = pygame.transform.rotate(SOLDIER1_IMG1 if self.weapon == "ross" else SOLDIER1_IMG2, self.rot)
         self.manager.screen.blit(self.image, self.pos - VEC(self.image.get_size()) // 2 + VEC(0, -10).rotate(-self.rot) - self.camera.offset)
 
     def get_shot(self):
-        self.health[choices(["head", "body", "arms", "legs"], weights=[3, 10, 6, 8])[0]] -= randint(40, 80)
+        self.health[choices(["head", "body", "arms", "legs"], weights=[3, 10, 6, 8])[0]] -= self.weapon_damage + randint(-20, 20)
         for _ in range(randint(20, 35)):
             Blood(self.manager, self.pos)
 
