@@ -5,9 +5,9 @@ if TYPE_CHECKING:
     from game_manager import GameManager
 
 from constants import TILE_SIZE, VEC, WIDTH, HEIGHT
+from images import TILE_IMGS, FLAG_IMG
 from sprite import Sprite, LayersEnum
 from random import randint, choice
-from images import TILE_IMGS
 from enemy import Enemy
 import pygame
 
@@ -22,7 +22,7 @@ class TileManager:
     def generate(self, pos: tuple[int, int]):
         pos = VEC(pos)
         if pos.x not in self.trench_positions:
-            self.trench_positions[pos.x] = not randint(0, 10)
+            self.trench_positions[pos.x] = not randint(0, 10) or pos.x % 16 == 0
         if pos.x >= 0 and (self.trench_positions[pos.x] or pos.x == 0):
             if randint(0, 4) == 0 and pos.x > 8:
                 Enemy(self.manager, pos * TILE_SIZE + (randint(16, 48), randint(16, 48)))
@@ -52,9 +52,13 @@ class Tile(Sprite):
             case "ground": self.rotation = choice([0, 90, 180, 270])
             case "trench": self.rotation = choice([0, 180])
         self.image = pygame.transform.rotate(TILE_IMGS[self.name], self.rotation)
+        self.flag = pos[0] == 50 and randint(0, 4)
+        self.flag_offset = VEC(randint(16, 48), randint(16, 48))
 
     def update(self):
         pass
 
     def draw(self):
         self.manager.screen.blit(self.image, self.pos - self.scene.player.camera.offset)
+        if self.flag:
+            self.manager.screen.blit(FLAG_IMG, self.pos + self.flag_offset - self.scene.player.camera.offset)

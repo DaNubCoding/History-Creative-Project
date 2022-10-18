@@ -90,8 +90,9 @@ class Player(Sprite):
             self.health["legs"] -= 1 * self.manager.dt
             if self.weapon == "ross": # "jam" the gun
                 self.bullet_interval += 0.04 * self.manager.dt
-        self.vel -= (200 - self.health["feet"] - self.health["legs"]) / 200 * self.vel * self.manager.dt * 10
+        self.vel -= (200 - self.health["feet"] - self.health["legs"]) / 250 * self.vel * self.manager.dt * 10
         self.vel = snap(self.vel, VEC(), VEC(1, 1))
+        self.vel.x += 10
 
         # Update position
         self.pos += intvec(self.vel) * self.manager.dt
