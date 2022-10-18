@@ -25,8 +25,8 @@ class Blood(Sprite):
         self.acc = -self.vel * 7
         self.vel += intvec(self.acc) * self.manager.dt
         self.pos += intvec(self.vel) * self.manager.dt
-        if time.time() - self.timer > self.alive_time:
-            self.kill()
+        # if time.time() - self.timer > self.alive_time:
+        #     self.kill()
 
     def draw(self) -> None:
         pygame.draw.circle(self.manager.screen, (140, 0, 0), self.pos - self.scene.player.camera.offset, self.radius)

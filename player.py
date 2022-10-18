@@ -84,19 +84,19 @@ class Player(Sprite):
 
         # Update velocity
         self.vel += intvec(self.acc) * self.manager.dt
-        self.vel = self.vel.normalize() * self.max_speed if self.vel.length() > self.max_speed else self.vel
         # If in trench
         if self.on_tile and self.on_tile.name[:-1] == "trench":
-            self.vel -= self.vel * 0.05
+            self.vel -= self.vel * 15 * self.manager.dt
             self.health["feet"] -= 2 * self.manager.dt
             self.health["legs"] -= 1 * self.manager.dt
-            self.max_speed = (self.NORMAL_MAX_SPEED - 30) * (self.health["feet"] + self.health["legs"]) / 200 + 30
             if self.weapon == "ross": # "jam" the gun
                 self.bullet_interval += 0.02 * self.manager.dt
         self.vel = snap(self.vel, VEC(), VEC(1, 1))
 
         # Update position
         self.pos += intvec(self.vel) * self.manager.dt
+        if self.pos.x < -100:
+            self.pos.x = -100
         self.coords = self.pos // TILE_SIZE
 
         # Update rotation
