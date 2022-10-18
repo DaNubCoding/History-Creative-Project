@@ -23,8 +23,8 @@ class Game(Scene):
     def update(self) -> None:
         # Main game update logic goes here
         self.tile_manager.update()
-        if len(self.enemies) < 5:
-            Enemy(self.manager, VEC(randint(-5, 5) * TILE_SIZE, randint(-3, 3) * TILE_SIZE) + self.player.coords)
+        # if len(self.enemies) < 5:
+        #     Enemy(self.manager, VEC(randint(-5, 5) * TILE_SIZE, randint(-3, 3) * TILE_SIZE) + self.player.coords)
         super().update()
         # or here if the logic should run after all sprites update
 

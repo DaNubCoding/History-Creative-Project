@@ -65,7 +65,6 @@ class Player(Sprite):
         self.weapon_damage = 50
         self.weapon = "ross"
 
-        self.NORMAL_MAX_SPEED = 220
         self.CONST_ACC = 1000
         self.ROT_ACC = 5
 
@@ -86,11 +85,12 @@ class Player(Sprite):
         self.vel += intvec(self.acc) * self.manager.dt
         # If in trench
         if self.on_tile and self.on_tile.name[:-1] == "trench":
-            self.vel -= self.vel * 15 * self.manager.dt
+            self.vel -= self.vel * 20 * self.manager.dt
             self.health["feet"] -= 2 * self.manager.dt
             self.health["legs"] -= 1 * self.manager.dt
             if self.weapon == "ross": # "jam" the gun
-                self.bullet_interval += 0.02 * self.manager.dt
+                self.bullet_interval += 0.04 * self.manager.dt
+        self.vel -= (200 - self.health["feet"] - self.health["legs"]) / 200 * self.vel * self.manager.dt * 10
         self.vel = snap(self.vel, VEC(), VEC(1, 1))
 
         # Update position

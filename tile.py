@@ -8,6 +8,7 @@ from constants import TILE_SIZE, VEC, WIDTH, HEIGHT
 from sprite import Sprite, LayersEnum
 from random import randint, choice
 from images import TILE_IMGS
+from enemy import Enemy
 import pygame
 
 class TileManager:
@@ -22,8 +23,12 @@ class TileManager:
         pos = VEC(pos)
         if pos.x not in self.trench_positions:
             self.trench_positions[pos.x] = not randint(0, 15)
-        if pos.x not in {-5, -4, -3, -2, -1, 1, 2, 3, 4, 5} and (self.trench_positions[pos.x] or pos.x == 0):
+        if pos.x >= 0 and (self.trench_positions[pos.x] or pos.x == 0):
+            if randint(0, 3) == 0 and pos.x > 8:
+                Enemy(self.manager, pos * TILE_SIZE + (randint(16, 48), randint(16, 48)))
             return "trench1"
+        if randint(0, 60) == 0 and pos.x > 12:
+            Enemy(self.manager, pos * TILE_SIZE + (randint(16, 48), randint(16, 48)))
         return "ground" + str(randint(1, 2))
 
     def update(self):

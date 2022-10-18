@@ -37,7 +37,7 @@ class Enemy(Sprite):
         self.move_duration = uniform(1, 4)
         self.move_direction = choice([VEC(-1, 0), VEC(1, 0), VEC(0, -1), VEC(0, 1), VEC(-1, -1), VEC(-1, 1), VEC(1, -1), VEC(1, 1)])
         self.fire_timer = time.time()
-        self.fire_interval = uniform(2, 6)
+        self.fire_interval = uniform(1, 4)
         self.health = {
             "head": 100,
             "body": 100,
@@ -50,7 +50,6 @@ class Enemy(Sprite):
         self.heavily_injured = False
         self.run_away = False
 
-        self.NORMAL_MAX_SPEED = 140
         self.CONST_ACC = 1000
         self.ROT_ACC = 3
 
@@ -65,19 +64,20 @@ class Enemy(Sprite):
             self.move_timer = time.time()
             self.moving = False
             self.move_direction = VEC(0, 0)
+        if self.on_tile and self.on_tile.name[:-1] == "trench":
+            self.move_direction = VEC(0, 0)
 
         if time.time() - self.fire_timer > self.fire_interval:
             self.move_duration = 0
             self.rot_to_player()
             if abs(self.rot - self.rot_target) < 3:
                 self.fire_timer = time.time()
-                self.fire_interval = uniform(2, 6)
+                self.fire_interval = uniform(1, 4)
                 EnemyBullet(self.manager, self, self.pos + VEC(10, -34).rotate(-self.rot))
 
         if self.run_away and self.on_tile.name[:-1] != "trench":
             self.rot_to_player()
             self.move_direction = VEC(-sign(self.scene.player.pos.x - self.pos.x), 0)
-        # print(self.run_away)
 
         # Update acceleration
         self.acc = VEC(0, 0)
@@ -87,11 +87,10 @@ class Enemy(Sprite):
 
         # Update velocity
         self.vel += intvec(self.acc) * self.manager.dt
-        self.vel = self.vel.normalize() * self.max_speed if self.vel.length() > self.max_speed else self.vel
         if self.on_tile and self.on_tile.name[:-1] == "trench":
-            self.vel -= self.vel * 0.05
-            self.health["feet"] -= 0.0025
-            self.max_speed = (self.NORMAL_MAX_SPEED - 30) * self.health["feet"] / 100 + 30
+            self.vel -= self.vel * 20 * self.manager.dt
+            self.health["feet"] -= 2 * self.manager.dt
+            self.health["legs"] -= 1 * self.manager.dt
         self.vel = snap(self.vel, VEC(), VEC(1, 1))
 
         # Update position

@@ -32,19 +32,18 @@ class Bullet(Sprite):
 class PlayerBullet(Bullet):
     def __init__(self, manager: GameManager, master: Sprite, pos: tuple[int, int]) -> None:
         super().__init__(manager, master, pos)
-        self.trench_hit = randint(0, 5) == 0
 
     def update(self):
         super().update()
         for enemy in self.scene.enemies:
-            if self.pos.distance_to(enemy.pos) < 20 and (enemy.on_tile.name[:-1] != "trench" or self.trench_hit):
+            if self.pos.distance_to(enemy.pos) < 20 and (enemy.on_tile.name[:-1] != "trench" or randint(0, 5) == 0 or self.master.coords.x == enemy.coords.x):
                 enemy.get_shot()
                 self.kill()
 
 class EnemyBullet(Bullet):
     def __init__(self, manager: GameManager, master: Sprite, pos: tuple[int, int]) -> None:
         super().__init__(manager, master, pos)
-        self.trench_hit = randint(0, 5) == 0
+        self.trench_hit = randint(0, 5) == 0 or master.coords.x == self.scene.player.coords.x
         self.vel = VEC(800, 0).rotate(-self.master.rot - 90 + self.deviation)
 
     def update(self):
