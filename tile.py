@@ -22,14 +22,14 @@ class TileManager:
     def generate(self, pos: tuple[int, int]):
         pos = VEC(pos)
         if pos.x not in self.trench_positions:
-            self.trench_positions[pos.x] = not randint(0, 15)
+            self.trench_positions[pos.x] = not randint(0, 10)
         if pos.x >= 0 and (self.trench_positions[pos.x] or pos.x == 0):
-            if randint(0, 3) == 0 and pos.x > 8:
+            if randint(0, 4) == 0 and pos.x > 8:
                 Enemy(self.manager, pos * TILE_SIZE + (randint(16, 48), randint(16, 48)))
             return "trench1"
         if randint(0, 60) == 0 and pos.x > 12:
             Enemy(self.manager, pos * TILE_SIZE + (randint(16, 48), randint(16, 48)))
-        return "ground" + str(randint(1, 2))
+        return "ground" + (str(randint(1, 3)) if randint(0, 16) else str(randint(4, 7)))
 
     def update(self):
         for tile in self.scene.sprite_manager.layers[LayersEnum.TILES.value]:
