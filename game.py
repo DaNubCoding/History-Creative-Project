@@ -10,6 +10,7 @@ from tile import TileManager
 from random import randint
 from scene import Scene
 from enemy import Enemy
+from ally import Ally
 
 class Game(Scene):
     def setup(self) -> None:
@@ -19,6 +20,9 @@ class Game(Scene):
         self.tile_manager = TileManager(self.manager)
         self.player_health_hud = PlayerHealthHUD(self.manager)
         self.enemies: list[Enemy] = []
+        self.allies: list[Ally] = []
+        for _ in range(9):
+            Ally(self.manager, VEC(32, randint(-5, 5) * TILE_SIZE))
 
     def update(self) -> None:
         # Main game update logic goes here

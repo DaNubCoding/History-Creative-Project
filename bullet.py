@@ -51,3 +51,10 @@ class EnemyBullet(Bullet):
         if self.pos.distance_to(self.scene.player.pos) < 20 and (self.scene.player.on_tile.name[:-1] != "trench" or self.trench_hit):
             self.scene.player.get_shot()
             self.kill()
+            return
+
+        for ally in self.scene.allies:
+            if self.pos.distance_to(ally.pos) < 20 and (ally.on_tile.name[:-1] != "trench" or randint(0, 5) == 0 or self.master.coords.x == ally.coords.x):
+                ally.get_shot()
+                self.kill()
+                return

@@ -6,7 +6,7 @@ if TYPE_CHECKING:
 
 from pygame.locals import DOUBLEBUF, HWSURFACE, QUIT
 from constants import SCR_DIM, FPS
-from menus import MainMenu
+from menus import GameOver, MainMenu
 from game import Game
 from enum import Enum
 import pygame
@@ -50,6 +50,7 @@ class GameManager:
     class Scenes(Enum):
         GAME = Game
         MAINMENU = MainMenu
+        GAMEOVER = GameOver
 
     # "self.game.new_scene(self.game.Scenes.GAME)" anywhere in any sprite code to start a new scene
     def new_scene(self, scene_class: Scene, **kwargs) -> None:

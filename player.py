@@ -92,7 +92,6 @@ class Player(Sprite):
                 self.bullet_interval += 0.04 * self.manager.dt
         self.vel -= (200 - self.health["feet"] - self.health["legs"]) / 250 * self.vel * self.manager.dt * 10
         self.vel = snap(self.vel, VEC(), VEC(1, 1))
-        self.vel.x += 10
 
         # Update position
         self.pos += intvec(self.vel) * self.manager.dt
@@ -146,6 +145,10 @@ class Player(Sprite):
     def draw(self):
         self.image = pygame.transform.rotate(SOLDIER1_IMG1 if self.weapon == "ross" else SOLDIER1_IMG2, self.rot)
         self.manager.screen.blit(self.image, self.pos - VEC(self.image.get_size()) // 2 + VEC(0, -10).rotate(-self.rot) - self.camera.offset)
+
+    def kill(self) -> None:
+        super().kill()
+        self.manager.new_scene(self.manager.Scenes.GAMEOVER, game=self.scene)
 
     def get_shot(self):
         self.health[choices(["head", "body", "arms", "legs"], weights=[3, 10, 6, 8])[0]] -= self.weapon_damage + randint(-20, 20)

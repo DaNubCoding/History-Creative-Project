@@ -5,24 +5,25 @@ if TYPE_CHECKING:
     from game_manager import GameManager
 
 from random import uniform, choice, choices, randint
-from images import SOLDIER2_IMG, SKULL_IMG
 from sprite import Sprite, LayersEnum
 from constants import VEC, TILE_SIZE
 from utils import intvec, inttup
+from images import SOLDIER1_IMG1
 from math import degrees, atan2
-from bullet import EnemyBullet
+from bullet import PlayerBullet
 from particles import Blood
 from numpy import average
+from enemy import Skull
 from clamps import snap
 from items import Item
 from utils import sign
 import pygame
 import time
 
-class Enemy(Sprite):
+class Ally(Sprite):
     def __init__(self, manager: GameManager, pos: tuple[int, int]) -> None:
         super().__init__(manager, LayersEnum.ENEMIES)
-        self.manager.scene.enemies.append(self)
+        self.manager.scene.allies.append(self)
         self.pos = VEC(pos)
         self.vel = VEC(0, 0)
         self.acc = VEC(0, 0)
@@ -33,7 +34,7 @@ class Enemy(Sprite):
         self.on_tile = None
         self.moving = False
         self.move_timer = time.time()
-        self.move_interval = uniform(0.5, 3)
+        self.move_interval = uniform(0.5, 1.5)
         self.move_duration = uniform(1, 4)
         self.move_direction = choice([VEC(-1, 0), VEC(1, 0), VEC(0, -1), VEC(0, 1), VEC(-1, -1), VEC(-1, 1), VEC(1, -1), VEC(1, 1)])
         self.fire_timer = time.time()
@@ -57,18 +58,31 @@ class Enemy(Sprite):
         self.ROT_ACC = 3
 
     def update(self):
-        if time.time() - self.move_timer > self.move_interval:
-            self.move_interval = uniform(0.5, 3)
-            self.move_timer = time.time()
-            self.moving = True
-            self.move_direction = choice([VEC(-1, 0), VEC(1, 0), VEC(0, -1), VEC(0, 1), VEC(-1, -1), VEC(-1, 1), VEC(1, -1), VEC(1, 1)])
-        if self.moving and time.time() - self.move_timer > self.move_duration:
-            self.move_duration = uniform(2, 5)
-            self.move_timer = time.time()
-            self.moving = False
-            self.move_direction = VEC(0, 0)
-        if self.on_tile and self.on_tile.name[:-1] == "trench":
-            self.move_direction = VEC(0, 0)
+        if self.scene.player.pos.distance_to(self.pos) > 240:
+            self.move_direction = VEC(sign(self.scene.player.pos.x - self.pos.x), sign(self.scene.player.pos.y - self.pos.y))
+        else:
+            if time.time() - self.move_timer > self.move_interval:
+                self.move_interval = uniform(0.5, 1.5)
+                self.move_timer = time.time()
+                self.moving = True
+                self.move_direction = choice([VEC(1, 0), VEC(1, -1), VEC(1, 1)])
+            if self.moving and time.time() - self.move_timer > self.move_duration:
+                self.move_duration = uniform(1, 4)
+                self.move_timer = time.time()
+                self.moving = False
+                self.move_direction = VEC(0, 0)
+            # if self.on_tile and self.on_tile.name[:-1] == "trench":
+            #     self.move_direction = VEC(0, 0)
+
+        if time.time() - self.target_timer > self.target_interval:
+            self.target_timer = time.time()
+            self.target_interval = uniform(3, 6)
+            if self.scene.enemies:
+                current = self.scene.enemies[0]
+                for ally in self.scene.enemies:
+                    if ally.pos.distance_to(self.pos) < current.pos.distance_to(self.pos):
+                        current = ally
+                self.target = current
 
         if time.time() - self.fire_timer > self.fire_interval and self.target:
             self.move_duration = 0
@@ -76,27 +90,21 @@ class Enemy(Sprite):
             if abs(self.rot - self.rot_target) < 3:
                 self.fire_timer = time.time()
                 self.fire_interval = uniform(1, 4)
-                EnemyBullet(self.manager, self, self.pos + VEC(10, -34).rotate(-self.rot))
+                PlayerBullet(self.manager, self, self.pos + VEC(10, -34).rotate(-self.rot))
 
-        if time.time() - self.target_timer > self.target_interval:
-            self.target_timer = time.time()
-            self.target_interval = uniform(3, 6)
-            if self.scene.allies:
-                current = self.scene.allies[0]
-                for ally in self.scene.allies + [self.scene.player]:
-                    if ally.pos.distance_to(self.pos) < current.pos.distance_to(self.pos):
-                        current = ally
-                self.target = current
-
-        if self.run_away and self.target:
-            self.rot_to_target()
-            self.move_direction = VEC(1, 0)
+        # if self.run_away and self.on_tile.name[:-1] != "trench":
+        #     self.rot_to_target()
+        #     self.move_direction = VEC(-sign(self.scene.player.pos.x - self.pos.x), 0)
 
         # Update acceleration
         self.acc = VEC(0, 0)
         self.acc = self.move_direction.copy()
         self.acc = self.acc.normalize() * self.CONST_ACC if self.acc else VEC()
         self.acc -= self.vel * 5
+        
+        for ally in self.scene.allies:
+            if ally is self or self.pos.distance_to(ally.pos) > 30: continue
+            self.acc += ((self.pos - ally.pos).normalize() if self.pos - ally.pos else VEC()) * 400
 
         # Update velocity
         self.vel += intvec(self.acc) * self.manager.dt
@@ -145,16 +153,14 @@ class Enemy(Sprite):
             self.kill()
 
     def draw(self):
-        self.image = pygame.transform.rotate(SOLDIER2_IMG, self.rot)
+        self.image = pygame.transform.rotate(SOLDIER1_IMG1, self.rot)
         self.manager.screen.blit(self.image, self.pos - VEC(self.image.get_size()) // 2 + VEC(0, -10).rotate(-self.rot) - self.scene.player.camera.offset)
         # pygame.draw.circle(self.manager.screen, (0, 255, 0), self.pos - self.scene.player.camera.offset, 20, 3)
 
     def kill(self) -> None:
         Skull(self.manager, self.pos)
-        offset = VEC(choice([randint(-40, -20), randint(20, 40)]), choice([randint(-40, -20), randint(20, 40)]))
-        Item(self.manager, self.pos + offset, "lee_enfield_rifle")
         try:
-            self.scene.enemies.remove(self)
+            self.scene.allies.remove(self)
         except ValueError:
             pass
         super().kill()
@@ -165,17 +171,5 @@ class Enemy(Sprite):
             Blood(self.manager, self.pos)
 
     def rot_to_target(self):
-        self.rot_target = degrees(atan2(self.target.pos.x - self.pos.x, self.target.pos.y - self.pos.y)) + 180
-
-class Skull(Sprite):
-    def __init__(self, manager: GameManager, pos: tuple[int, int]) -> None:
-        super().__init__(manager, LayersEnum.ENEMIES)
-        self.pos = VEC(pos)
-        self.timer = time.time()
-
-    def update(self):
-        if time.time() - self.timer > 8:
-            self.kill()
-
-    def draw(self):
-        self.manager.screen.blit(SKULL_IMG, self.pos - VEC(SKULL_IMG.get_size()) // 2 - self.scene.player.camera.offset)
+        if self.target:
+            self.rot_target = degrees(atan2(self.target.pos.x - self.pos.x, self.target.pos.y - self.pos.y)) + 180
