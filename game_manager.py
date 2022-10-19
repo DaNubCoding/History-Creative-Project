@@ -35,7 +35,7 @@ class GameManager:
 
     def update(self):
         self.dt = self.clock.tick_busy_loop(FPS) / 1000 # dt calculated for pixels/second
-        pygame.display.set_caption(f"Pygame Window | {self.clock.get_fps():.0f}")
+        pygame.display.set_caption(f"Trench Warfare: Pain and Suffering | {self.clock.get_fps():.0f}")
         self.events = {event.type: event for event in pygame.event.get()}
 
         if QUIT in self.events:
