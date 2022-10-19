@@ -27,7 +27,7 @@ class Item(Sprite):
                 self.kill()
             elif self.name == "med_kit":
                 for part in self.scene.player.health:
-                    self.scene.player.health[part] += self.scene.player.health[part] * 0.4
+                    self.scene.player.health[part] += (100 - self.scene.player.health[part]) * 0.4
                     if self.scene.player.health[part] > 100:
                         self.scene.player.health[part] = 100
                 self.kill()

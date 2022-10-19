@@ -23,8 +23,8 @@ class Game(Scene):
         self.tile_manager = TileManager(self.manager)
         for _ in range(len(self.enemies) // 3 + 2):
             Ally(self.manager, VEC(32, randint(-5, 5) * TILE_SIZE))
-        for enemy in self.enemies:
-            enemy.kill()
+        # for enemy in self.enemies:
+        #     enemy.kill()
 
     def update(self) -> None:
         # Main game update logic goes here
