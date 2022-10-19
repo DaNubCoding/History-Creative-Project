@@ -18,12 +18,19 @@ class Item(Sprite):
         self.image = pygame.transform.rotate(ITEM_IMGS[self.name], randint(0, 360))
 
     def update(self) -> None:
-        if self.pos.distance_to(self.scene.player.pos) < 40 and self.name == "lee_enfield_rifle":
-            self.scene.player.weapon_damage = 70
-            self.scene.player.weapon = "enfield"
-            self.scene.player.bullet_interval = 1
-            self.scene.player.deviation = 5
-            self.kill()
+        if self.pos.distance_to(self.scene.player.pos) < 40:
+            if self.name == "lee_enfield_rifle":
+                self.scene.player.weapon_damage = 70
+                self.scene.player.weapon = "enfield"
+                self.scene.player.bullet_interval = 1
+                self.scene.player.deviation = 5
+                self.kill()
+            elif self.name == "med_kit":
+                for part in self.scene.player.health:
+                    self.scene.player.health[part] += self.scene.player.health[part] * 0.4
+                    if self.scene.player.health[part] > 100:
+                        self.scene.player.health[part] = 100
+                self.kill()
 
     def draw(self) -> None:
         self.manager.screen.blit(self.image, self.pos - VEC(self.image.get_size()) // 2 - self.scene.player.camera.offset)

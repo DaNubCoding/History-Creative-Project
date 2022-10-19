@@ -154,6 +154,9 @@ class Enemy(Sprite):
         Skull(self.manager, self.pos)
         offset = VEC(choice([randint(-40, -20), randint(20, 40)]), choice([randint(-40, -20), randint(20, 40)]))
         Item(self.manager, self.pos + offset, "lee_enfield_rifle")
+        if randint(0, 3) == 0:
+            offset = VEC(choice([randint(-40, -20), randint(20, 40)]), choice([randint(-40, -20), randint(20, 40)]))
+            Item(self.manager, self.pos + offset, "med_kit")
         try:
             self.scene.enemies.remove(self)
         except ValueError:

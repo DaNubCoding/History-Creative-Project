@@ -22,4 +22,5 @@ SKULL_IMG = pygame.image.load(pathof("assets/textures/skull.png")).convert_alpha
 PARCHMENT_IMG = pygame.image.load(pathof("assets/textures/parchment.png")).convert_alpha()
 FLAG_IMG = pygame.image.load(pathof("assets/textures/flag.png")).convert_alpha()
 
+
 pygame.display.quit()

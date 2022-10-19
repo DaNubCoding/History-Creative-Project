@@ -15,8 +15,8 @@ class Bullet(Sprite):
         super().__init__(manager, LayersEnum.BULLETS)
         self.master = master
         self.pos = VEC(pos)
-        self.deviation = randint(-master.deviation, master.deviation)
-        # 15 accounts for the slight angle of the gun
+        self.deviation = randint(int(-master.deviation - master.deviation * (100 - master.health["arms"]) / 100), int(master.deviation + master.deviation * (100 - master.health["arms"]) / 100))
+        # -15 accounts for the slight angle of the gun
         self.vel = VEC(800, 0).rotate(-self.master.rot - 90 - 15 + self.deviation)
         self.image = pygame.transform.rotate(BULLET_IMG, self.vel.angle_to(VEC(0, -1)))
 
