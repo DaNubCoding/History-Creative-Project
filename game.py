@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from game_manager import GameManager
 
+from constants import NOTICE_SUB_FONT, TILE_SIZE, VEC, BIG_FONT
 from player import Player, PlayerHealthHUD
-from constants import TILE_SIZE, VEC
 from tile import TileManager
 from random import randint
 from scene import Scene
@@ -17,11 +17,11 @@ class Game(Scene):
         # Main game initialization goes here
         super().setup()
         self.player = Player(self.manager)
-        self.tile_manager = TileManager(self.manager)
         self.player_health_hud = PlayerHealthHUD(self.manager)
         self.enemies: list[Enemy] = []
         self.allies: list[Ally] = []
-        for _ in range(9):
+        self.tile_manager = TileManager(self.manager)
+        for _ in range(len(self.enemies) // 3 + 2):
             Ally(self.manager, VEC(32, randint(-5, 5) * TILE_SIZE))
 
     def update(self) -> None:
@@ -34,4 +34,6 @@ class Game(Scene):
         # Main game drawing goes here
         self.manager.screen.fill((0, 0, 0))
         super().draw()
+        self.manager.screen.blit(NOTICE_SUB_FONT.render("German Soldiers Left:", True, (0, 0, 0)), (20, 20))
+        self.manager.screen.blit(BIG_FONT.render(f"{len(self.enemies)}", True, (0, 0, 0)), (20, 36))
         # or here if drawn on top of all sprites

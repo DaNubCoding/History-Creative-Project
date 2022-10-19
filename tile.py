@@ -18,16 +18,19 @@ class TileManager:
         self.tiles = {}
         self.trench_positions = {}
         self.scene.sprite_manager.layers[LayersEnum.TILES.value] = []
+        for x in range(-2, 50):
+            for y in range(-10, 11):
+                self.tiles[(x, y)] = Tile(self.manager, (x, y), self.generate((x, y)))
 
     def generate(self, pos: tuple[int, int]):
         pos = VEC(pos)
         if pos.x not in self.trench_positions:
             self.trench_positions[pos.x] = not randint(0, 10) or pos.x % 16 == 0
         if pos.x >= 0 and (self.trench_positions[pos.x] or pos.x == 0):
-            if randint(0, 4) == 0 and pos.x > 8:
+            if (randint(0, 7) == 0 or pos.y % 10 == 0) and 8 < pos.x <= 50 and -10 < pos.y <= 10:
                 Enemy(self.manager, pos * TILE_SIZE + (randint(16, 48), randint(16, 48)))
             return "trench1"
-        if randint(0, 60) == 0 and pos.x > 12:
+        if randint(0, 60) == 0 and 8 < pos.x <= 50 and -10 < pos.y <= 10:
             Enemy(self.manager, pos * TILE_SIZE + (randint(16, 48), randint(16, 48)))
         return "ground" + (str(randint(1, 3)) if randint(0, 16) else str(randint(4, 7)))
 
@@ -41,7 +44,7 @@ class TileManager:
             for y in range(int(tiles_start.y), int(tiles_end.y)):
                 if (pos := (x, y)) not in self.tiles:
                     self.tiles[pos] = Tile(self.manager, pos, self.generate(pos))
-                self.scene.sprite_manager.add(self.tiles[pos])
+                self.scene.sprite_manager.add(self.tiles[(x, y)])
 
 class Tile(Sprite):
     def __init__(self, manager: GameManager, pos: tuple[int, int], name: str) -> None:

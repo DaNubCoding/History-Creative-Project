@@ -11,9 +11,9 @@ from constants import VEC, TILE_SIZE
 from utils import intvec, inttup
 from math import degrees, atan2
 from bullet import EnemyBullet
+from clamps import snap, clamp
 from particles import Blood
 from numpy import average
-from clamps import snap
 from items import Item
 from utils import sign
 import pygame
@@ -37,7 +37,7 @@ class Enemy(Sprite):
         self.move_duration = uniform(1, 4)
         self.move_direction = choice([VEC(-1, 0), VEC(1, 0), VEC(0, -1), VEC(0, 1), VEC(-1, -1), VEC(-1, 1), VEC(1, -1), VEC(1, 1)])
         self.fire_timer = time.time()
-        self.fire_interval = uniform(2, 5)
+        self.fire_interval = uniform(1, 3)
         self.health = {
             "head": 100,
             "body": 100,
@@ -75,10 +75,10 @@ class Enemy(Sprite):
             self.rot_to_target()
             if abs(self.rot - self.rot_target) < 3:
                 self.fire_timer = time.time()
-                self.fire_interval = uniform(1, 4)
+                self.fire_interval = uniform(1, 3)
                 EnemyBullet(self.manager, self, self.pos + VEC(10, -34).rotate(-self.rot))
 
-        if time.time() - self.target_timer > self.target_interval:
+        if time.time() - self.target_timer > self.target_interval and self.pos.distance_to(self.scene.player.pos) < 500:
             self.target_timer = time.time()
             self.target_interval = uniform(3, 6)
             if self.scene.allies:
@@ -108,6 +108,7 @@ class Enemy(Sprite):
 
         # Update position
         self.pos += intvec(self.vel) * self.manager.dt
+        self.pos, _ = clamp(self.pos, VEC(-100, -600), VEC(4000, 600))
         self.coords = self.pos // TILE_SIZE
 
         # Update rotation

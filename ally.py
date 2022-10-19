@@ -11,11 +11,10 @@ from utils import intvec, inttup
 from images import SOLDIER1_IMG1
 from math import degrees, atan2
 from bullet import PlayerBullet
+from clamps import snap, clamp
 from particles import Blood
 from numpy import average
 from enemy import Skull
-from clamps import snap
-from items import Item
 from utils import sign
 import pygame
 import time
@@ -116,6 +115,7 @@ class Ally(Sprite):
 
         # Update position
         self.pos += intvec(self.vel) * self.manager.dt
+        self.pos, _ = clamp(self.pos, VEC(-100, -600), VEC(4000, 600))
         self.coords = self.pos // TILE_SIZE
 
         # Update rotation

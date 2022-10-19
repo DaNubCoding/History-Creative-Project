@@ -11,10 +11,10 @@ from sprite import LayersEnum, Sprite
 from random import choices, randint
 from math import atan2, degrees
 from bullet import PlayerBullet
+from clamps import snap, clamp
 from particles import Blood
 from pygame.locals import *
 from numpy import average
-from clamps import snap
 import pygame
 import time
 
@@ -95,8 +95,7 @@ class Player(Sprite):
 
         # Update position
         self.pos += intvec(self.vel) * self.manager.dt
-        if self.pos.x < -100:
-            self.pos.x = -100
+        self.pos, _ = clamp(self.pos, VEC(-100, -600), VEC(4000, 600))
         self.coords = self.pos // TILE_SIZE
 
         # Update rotation
@@ -206,4 +205,4 @@ class PlayerHealthHUD(Sprite):
         pygame.draw.rect(self.image, self.colors["feet"], (25, 120, 15, 10))
         pygame.draw.rect(self.image, (80, 80, 80), (25, 120, 15, 10), 2)
 
-        self.manager.screen.blit(self.image, (20, 20))
+        self.manager.screen.blit(self.image, (20, 110))
