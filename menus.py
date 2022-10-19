@@ -32,7 +32,7 @@ class GameOver(Scene):
         self.allies = self.game.allies
         self.enemies = self.game.enemies
         if self.enemies:
-            Notice(self.manager, f"You sacrificed yourself on the battlefield, but you did not gain any ground... there {'was' if len(self.enemies) == 1 else 'were'}{' only' if len(self.enemies) < 5 else ''} {len(self.enemies)} German soldier{'' if len(self.enemies) == 1 else 's'} left.", "If it feels impossible, the WWI soldiers would like to agree. Press Enter to restart")
+            Notice(self.manager, f"You sacrificed yourself on the battlefield, but you did not gain any ground... there {'was' if len(self.enemies) == 1 else 'were'}{' only' if len(self.enemies) < 5 else ''} {len(self.enemies)} opposing soldier{'' if len(self.enemies) == 1 else 's'} left.", "If it feels impossible, the WWI soldiers would like to agree. Press Enter to restart")
         else:
             Notice(self.manager, "You were successful in your mission, the area was taken by your unit. You came away with permanent scars, but you will forever be remembered...", "Press Enter to restart")
 

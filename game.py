@@ -23,15 +23,15 @@ class Game(Scene):
         self.tile_manager = TileManager(self.manager)
         for _ in range(len(self.enemies) // 3 + 2):
             Ally(self.manager, VEC(32, randint(-5, 5) * TILE_SIZE))
-        # for enemy in self.enemies:
-        #     enemy.kill()
 
     def update(self) -> None:
+        # for enemy in self.enemies:
+        #     enemy.kill()
         # Main game update logic goes here
         self.tile_manager.update()
         super().update()
-        if not self.enemies and self.player.x > 3200:
-            self.manager.new_scene(self.manager.Scenes.GAMEOVER, game=self.scene)
+        if not self.enemies and self.player.pos.x > 3200:
+            self.manager.new_scene(self.manager.Scenes.GAMEOVER, game=self)
         # or here if the logic should run after all sprites update
 
     def draw(self) -> None:
@@ -39,7 +39,7 @@ class Game(Scene):
         self.manager.screen.fill((0, 0, 0))
         super().draw()
         if self.enemies:
-            self.manager.screen.blit(NOTICE_SUB_FONT.render("German Soldiers Left:", True, (0, 0, 0)), (20, 20))
+            self.manager.screen.blit(NOTICE_SUB_FONT.render("Opposing Soldiers Left:", True, (0, 0, 0)), (20, 20))
             self.manager.screen.blit(BIG_FONT.render(f"{len(self.enemies)}", True, (0, 0, 0)), (20, 36))
         else:
             self.manager.screen.blit(NOTICE_FONT.render("All clear, go straight East to the flags to capture area", True, (0, 0, 0)), (20, 20))

@@ -30,6 +30,7 @@ class Item(Sprite):
                     self.scene.player.health[part] += (100 - self.scene.player.health[part]) * 0.4
                     if self.scene.player.health[part] > 100:
                         self.scene.player.health[part] = 100
+                self.scene.player.heavily_injured = False
                 self.kill()
 
     def draw(self) -> None:
