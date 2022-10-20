@@ -39,6 +39,7 @@ class PlayerBullet(Bullet):
             if self.pos.distance_to(enemy.pos) < 20 and (enemy.on_tile.name[:-1] != "trench" or randint(0, 5) == 0 or self.master.coords.x == enemy.coords.x):
                 enemy.get_shot()
                 self.kill()
+                return
 
 class EnemyBullet(Bullet):
     def __init__(self, manager: GameManager, master: Sprite, pos: tuple[int, int]) -> None:
